@@ -16,3 +16,12 @@ result.csv
 
 # Local test/runtime files
 *.log
+
+# Backend/frontend build and dependency artifacts
+node_modules/
+dist/
+build/
+coverage/
+
+# Local Supabase CLI state
+supabase/.temp/
