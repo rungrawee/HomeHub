@@ -70,6 +70,33 @@ class ImporterTests(unittest.TestCase):
         self.assertEqual(repository.assets, [])
         self.assertEqual(repository.auctions, [])
 
+    def test_limit_imports_only_the_requested_number_of_rows(self):
+        headers = [
+            "หมายเลขคดี", "ลำดับ", "โฉนดที่ดิน", "ประเภททรัพย์_detail",
+            "จังหวัด_detail", "อำเภอ_detail", "ตำบล_detail", "ราคา_final",
+            "deposit_amount", "Location", "detail_raw_text",
+        ]
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "result.csv"
+            with path.open("w", encoding="utf-8-sig", newline="") as file:
+                writer = csv.writer(file)
+                writer.writerow(headers)
+                for index in (1, 2):
+                    writer.writerow([
+                        f"CASE-{index}", str(index), str(80000 + index), "ที่ดิน",
+                        "นนทบุรี", "บางบัวทอง", "บางรักพัฒนา", "0", "0", "", "",
+                    ])
+
+            repository = FakeRepository()
+            summary = import_csv(path, repository, limit=1)
+
+        self.assertEqual(summary.rows_read, 1)
+        self.assertEqual(len(repository.assets), 1)
+
+    def test_limit_must_be_positive(self):
+        with self.assertRaisesRegex(ValueError, "greater than zero"):
+            import_csv("missing.csv", FakeRepository(), limit=0)
+
 
 if __name__ == "__main__":
     unittest.main()
