@@ -13,7 +13,7 @@ from app.supabase_client import create_supabase_client
 class SupabaseClientTests(unittest.TestCase):
     def test_missing_credentials_are_rejected(self):
         with self.assertRaisesRegex(ValueError, "SUPABASE_URL"):
-            create_supabase_client(Settings())
+            create_supabase_client(Settings(_env_file=None))
 
     def test_client_uses_server_credentials(self):
         calls = []
