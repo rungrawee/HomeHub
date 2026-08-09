@@ -1,0 +1,18 @@
+.DS_Store
+.idea/
+.venv/
+__pycache__/
+*.py[cod]
+.env
+.env.*
+!.env.example
+
+# Scraper runtime artifacts
+before_search*.png
+cropped.png
+lands_maps*.png
+search_failed.png
+result.csv
+
+# Local test/runtime files
+*.log

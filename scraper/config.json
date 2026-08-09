@@ -1,0 +1,13 @@
+{
+  "search": {
+    "province": "นนทบุรี",
+    "amphur": "บางบัวทอง",
+    "tambon": "บางรักพัฒนา",
+    "asset_type": "ที่ดินพร้อมสิ่งปลูกสร้าง",
+    "rai_condition": "มากกว่า",
+    "rai_value": "",
+    "maximum_price": "3,000,000",
+    "minimum_price": "1,000,000"
+  },
+  "output_csv": "result.csv"
+}
