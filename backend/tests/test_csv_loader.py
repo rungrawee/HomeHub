@@ -17,6 +17,7 @@ HEADERS = [
     "ราคา_final",
     "deposit_amount",
     "Location",
+    "detail_raw_text",
 ]
 
 
@@ -33,14 +34,15 @@ class CsvLoaderTests(unittest.TestCase):
 
     def test_reads_utf8_bom_and_normalizes_values(self):
         path = self.write_csv(
-            rows=[[" CASE-1 ", " 1 ", "81662", "ที่ดิน", "นนทบุรี", "บางบัวทอง", "บางรักพัฒนา", "1,000.00", "150,000.00", "13.9,100.2"]]
+            rows=[[" CASE-1 ", " 1 ", "81662", "ที่ดิน", "นนทบุรี", "บางบัวทอง", "บางรักพัฒนา", "1,000.00", "150,000.00", "13.9,100.2", "line 1\nline 2"]]
         )
         rows = read_csv_rows(path)
         self.assertEqual(rows[0]["หมายเลขคดี"], "CASE-1")
         self.assertEqual(rows[0]["ลำดับ"], "1")
+        self.assertEqual(rows[0]["detail_raw_text"], "line 1\nline 2")
 
     def test_rejects_missing_required_column(self):
-        path = self.write_csv(headers=HEADERS[:-1])
+        path = self.write_csv(headers=HEADERS[:-2])
         with self.assertRaisesRegex(CsvValidationError, "Location"):
             read_csv_rows(path)
 

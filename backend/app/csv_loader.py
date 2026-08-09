@@ -52,11 +52,17 @@ def read_csv_rows(
                 row_errors.append(f"row {row_number}: has more values than headers")
                 continue
 
-            row = {
-                clean_csv_value(key): clean_csv_value(value)
-                for key, value in raw_row.items()
-                if key is not None
-            }
+            row = {}
+            for key, value in raw_row.items():
+                if key is None:
+                    continue
+                clean_key = clean_csv_value(key)
+                # Keep detail_raw_text intact; auction parsing needs its rows.
+                row[clean_key] = (
+                    (value or "").strip()
+                    if clean_key == "detail_raw_text"
+                    else clean_csv_value(value)
+                )
             missing_values = [
                 column
                 for column in ("หมายเลขคดี", "ลำดับ")
