@@ -1,7 +1,9 @@
 import os
 import sys
 import types
+import tempfile
 import unittest
+from pathlib import Path
 from unittest.mock import patch
 
 from app.settings import Settings
@@ -44,6 +46,19 @@ class SupabaseClientTests(unittest.TestCase):
 
         self.assertEqual(settings.supabase_url, "https://example.supabase.co")
         self.assertEqual(settings.supabase_service_role_key, "server-secret")
+
+    def test_settings_can_load_a_backend_env_file(self):
+        with tempfile.TemporaryDirectory() as directory:
+            env_path = Path(directory) / ".env"
+            env_path.write_text(
+                "SUPABASE_URL=https://file.supabase.co\n"
+                "SUPABASE_SERVICE_ROLE_KEY=file-secret\n",
+                encoding="utf-8",
+            )
+            settings = Settings(_env_file=env_path)
+
+        self.assertEqual(settings.supabase_url, "https://file.supabase.co")
+        self.assertEqual(settings.supabase_service_role_key, "file-secret")
 
 
 if __name__ == "__main__":
