@@ -12,6 +12,17 @@ class MappingTests(unittest.TestCase):
         with self.assertRaises(MappingError):
             parse_amount("not-a-price")
 
+    def test_source_key_changes_when_deed_changes(self):
+        base = {
+            "หมายเลขคดี": "CASE-1",
+            "ลำดับ": "1",
+            "โฉนดที่ดิน": "81662",
+        }
+        changed = {**base, "โฉนดที่ดิน": "131507"}
+        first = map_csv_row({**base, "ราคา_final": "0", "deposit_amount": "0"})
+        second = map_csv_row({**changed, "ราคา_final": "0", "deposit_amount": "0"})
+        self.assertNotEqual(first.values["source_key"], second.values["source_key"])
+
     def test_extracts_thai_auction_dates_and_statuses(self):
         raw = (
             "1\t23/04/2569\tงดขายไม่มีผู้สู้ราคา\t\n"
