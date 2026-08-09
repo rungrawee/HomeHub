@@ -27,3 +27,25 @@ class SupabaseRepository:
         if not asset_id:
             raise RepositoryError(f"Supabase asset has no id for {source_key!r}")
         return str(asset_id)
+
+    def upsert_auctions(self, asset_id: str, auctions: list[Any]) -> int:
+        if not asset_id:
+            raise RepositoryError("asset_id is required for auction records")
+        if not auctions:
+            return 0
+
+        rows = []
+        for auction in auctions:
+            values = auction.to_dict() if hasattr(auction, "to_dict") else dict(auction)
+            values["asset_id"] = asset_id
+            rows.append(values)
+
+        response = (
+            self.client.table("auctions")
+            .upsert(
+                rows,
+                on_conflict="asset_id,auction_round,auction_date",
+            )
+            .execute()
+        )
+        return len(getattr(response, "data", None) or rows)

@@ -1,6 +1,7 @@
 import unittest
 
 from app.repository import RepositoryError, SupabaseRepository
+from app.mapping import AuctionRecord
 
 
 class FakeResponse:
@@ -49,6 +50,25 @@ class RepositoryTests(unittest.TestCase):
         client = FakeClient(FakeResponse([]))
         with self.assertRaises(RepositoryError):
             SupabaseRepository(client).upsert_asset({"source_key": "CASE|1|81662"})
+
+    def test_upsert_auctions_uses_composite_conflict_key(self):
+        client = FakeClient(FakeResponse([]))
+        repository = SupabaseRepository(client)
+        count = repository.upsert_auctions(
+            "asset-1",
+            [AuctionRecord(1, "2026-04-23", "งดขายไม่มีผู้สู้ราคา")],
+        )
+
+        self.assertEqual(count, 1)
+        self.assertEqual(client.table_name, "auctions")
+        call = client.query.calls[-1]
+        self.assertEqual(call[2], "asset_id,auction_round,auction_date")
+        self.assertEqual(call[1][0]["asset_id"], "asset-1")
+
+    def test_empty_auctions_do_not_call_supabase(self):
+        client = FakeClient(FakeResponse([]))
+        self.assertEqual(SupabaseRepository(client).upsert_auctions("asset-1", []), 0)
+        self.assertEqual(client.query.calls, [])
 
 
 if __name__ == "__main__":
