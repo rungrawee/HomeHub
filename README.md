@@ -15,3 +15,6 @@ cd scraper
 ```
 
 Backend and frontend are placeholders until the API design is approved.
+
+Backend import instructions are documented in `backend/README.md`. Always run
+the CSV importer with `--dry-run` before using Supabase credentials.
