@@ -28,6 +28,15 @@ not write to the database:
 PYTHONPATH=backend .venv/bin/python backend/import_csv.py scraper/result.csv --dry-run
 ```
 
+For the first real database test, limit the import to one row:
+
+```bash
+PYTHONPATH=backend .venv/bin/python backend/import_csv.py scraper/result.csv --limit 1
+```
+
+Verify that one asset and its auction history are correct in Supabase before
+running an unrestricted import.
+
 After reviewing the summary, create `backend/.env` from `.env.example` and add
 the Supabase server credentials. Never commit that file. The real import is:
 

@@ -13,12 +13,23 @@ def main() -> None:
         action="store_true",
         help="Validate and map the CSV without connecting to Supabase",
     )
+    parser.add_argument(
+        "--limit",
+        type=int,
+        default=None,
+        help="Import only the first N valid rows",
+    )
     args = parser.parse_args()
 
     repository = None
     if not args.dry_run:
         repository = SupabaseRepository(create_supabase_client())
-    summary = import_csv(args.csv_path, repository, dry_run=args.dry_run)
+    summary = import_csv(
+        args.csv_path,
+        repository,
+        dry_run=args.dry_run,
+        limit=args.limit,
+    )
     print(f"Rows read: {summary.rows_read}")
     if args.dry_run:
         print(f"Assets planned: {summary.assets_planned}")

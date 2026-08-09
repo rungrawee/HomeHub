@@ -19,9 +19,17 @@ def import_csv(
     path: str | Path,
     repository: Any | None,
     dry_run: bool = False,
+    limit: int | None = None,
 ) -> ImportSummary:
+    if limit is not None and limit <= 0:
+        raise ValueError("limit must be greater than zero")
+
+    rows = read_csv_rows(path)
+    if limit is not None:
+        rows = rows[:limit]
+
     summary = ImportSummary()
-    for row in read_csv_rows(path):
+    for row in rows:
         mapped = map_csv_row(row)
         summary.rows_read += 1
         if dry_run:
