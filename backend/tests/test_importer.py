@@ -46,6 +46,30 @@ class ImporterTests(unittest.TestCase):
         self.assertEqual(summary.auctions_upserted, 1)
         self.assertEqual(repository.auctions[0][0], "asset-1")
 
+    def test_dry_run_does_not_call_repository(self):
+        headers = [
+            "หมายเลขคดี", "ลำดับ", "โฉนดที่ดิน", "ประเภททรัพย์_detail",
+            "จังหวัด_detail", "อำเภอ_detail", "ตำบล_detail", "ราคา_final",
+            "deposit_amount", "Location", "detail_raw_text",
+        ]
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "result.csv"
+            with path.open("w", encoding="utf-8-sig", newline="") as file:
+                writer = csv.writer(file)
+                writer.writerow(headers)
+                writer.writerow([
+                    "CASE-1", "1", "131507", "ที่ดิน", "นนทบุรี", "บางบัวทอง",
+                    "บางรักพัฒนา", "1,534,750.00", "150,000.00", "", "1 23/04/2569 -",
+                ])
+
+            repository = FakeRepository()
+            summary = import_csv(path, repository, dry_run=True)
+
+        self.assertEqual(summary.assets_planned, 1)
+        self.assertEqual(summary.auctions_planned, 1)
+        self.assertEqual(repository.assets, [])
+        self.assertEqual(repository.auctions, [])
+
 
 if __name__ == "__main__":
     unittest.main()
