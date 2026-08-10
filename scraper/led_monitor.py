@@ -632,6 +632,47 @@ def wait_for_amphur_option(page, amphur_name: str, timeout_ms: int = 15000) -> s
     raise RuntimeError(f"ไม่พบอำเภอใน LandsMaps: {amphur_name}")
 
 
+def extract_landsmaps_location(text: str) -> str:
+    """Extract the coordinate pair displayed in the LandsMaps result dialog."""
+    match = re.search(
+        r"ค่าพิกัดแปลง\s*([+-]?\d+(?:\.\d+)?)\s*,\s*([+-]?\d+(?:\.\d+)?)",
+        text,
+    )
+    if not match:
+        raise LookupError("LandsMaps ไม่พบค่าพิกัดแปลงในผลลัพธ์")
+    return f"{match.group(1)},{match.group(2)}"
+
+
+def search_landsmaps_via_ui(page, province_value: str, amphur_value: str, deed: str) -> str:
+    """Use the same visible search flow as a user when the direct API fails."""
+    page.select_option("#cbprovince", value=province_value)
+    page.select_option("#cbamphur", value=amphur_value)
+    page.locator("#faketxtparcelno").fill(deed)
+
+    buttons = page.locator("button").filter(has_text="ค้นหา")
+    if buttons.count() > 0:
+        buttons.last.click()
+    else:
+        inputs = page.locator(
+            'input[type="button"][value*="ค้นหา"], '
+            'input[type="submit"][value*="ค้นหา"]'
+        )
+        if inputs.count() == 0:
+            raise RuntimeError("ไม่พบปุ่มค้นหาใน LandsMaps")
+        inputs.last.click()
+
+    page.wait_for_function(
+        "() => document.body.innerText.includes('ค่าพิกัดแปลง')",
+        timeout=30000,
+    )
+    location = extract_landsmaps_location(page.locator("body").inner_text())
+
+    close_buttons = page.locator("button").filter(has_text="ปิดหน้าต่าง")
+    if close_buttons.count() > 0:
+        close_buttons.last.click()
+    return location
+
+
 def get_landsmaps_location(page, row: dict, search_api: str, access_token: str) -> str:
     province = row.get("จังหวัด_detail", "")
     amphur = row.get("อำเภอ_detail", "")
@@ -683,7 +724,13 @@ def get_landsmaps_location(page, row: dict, search_api: str, access_token: str) 
         except Exception as error:
             last_error = error
 
-    raise last_error or LookupError(f"LandsMaps ไม่พบข้อมูล: {province}/{amphur}/{deed}")
+    try:
+        return search_landsmaps_via_ui(page, province_value, amphur_value, deed)
+    except Exception as ui_error:
+        raise RuntimeError(
+            f"LandsMaps API และ UI ค้นหาไม่สำเร็จ: {province}/{amphur}/{deed}; "
+            f"API={last_error}; UI={ui_error}"
+        ) from ui_error
 
 
 def enrich_locations_with_landsmaps(page, results: list[dict]) -> None:
