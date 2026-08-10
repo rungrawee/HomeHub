@@ -6,6 +6,7 @@ from pathlib import Path
 
 from led_monitor import (
     calculate_final_price,
+    extract_landsmaps_location,
     extract_sale_method,
     extract_standard_deposit,
     is_mortgage_attached,
@@ -47,6 +48,16 @@ class LedMonitorTests(unittest.TestCase):
     def test_landsmaps_name_normalizes_codes_and_suffixes(self):
         self.assertEqual(normalize_landsmaps_name("05-ไทรน้อย(บางบัวทอง)"), "ไทรน้อย")
         self.assertEqual(landsmaps_name_candidates("ไทรน้อย(บางบัวทอง)"), ["ไทรน้อย", "บางบัวทอง"])
+
+    def test_extract_landsmaps_location_from_result_text(self):
+        text = "ค่าพิกัดแปลง\n13.89266500,100.42568942\nข้อมูลการเดินทาง"
+        self.assertEqual(
+            extract_landsmaps_location(text), "13.89266500,100.42568942"
+        )
+
+    def test_extract_landsmaps_location_requires_coordinates(self):
+        with self.assertRaises(LookupError):
+            extract_landsmaps_location("ข้อมูลแปลงที่ดิน แต่ไม่มีพิกัด")
 
     def test_empty_rai_value_is_valid_config(self):
         with tempfile.TemporaryDirectory() as directory:
