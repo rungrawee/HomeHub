@@ -107,6 +107,7 @@ def map_csv_row(row: dict[str, str]) -> MappedAsset:
         "officer_name": clean_text(row.get("เจ้าของสำนวน")),
         "sale_location": clean_text(row.get("สถานที่จำหน่าย")),
         "location": clean_text(row.get("Location")),
+        "image_url": clean_text(row.get("image_url")),
         "detail_url": clean_text(row.get("detail_url")),
         "raw_detail": row.get("detail_raw_text", ""),
     }

@@ -21,6 +21,10 @@ uvicorn app.main:app --reload
 
 ## CSV import
 
+Before importing CSV files that contain property images, run
+`supabase/add_asset_image_url.sql` once in the Supabase SQL Editor. The
+migration is idempotent and only adds the nullable `image_url` column.
+
 Run the safe validation first. This does not need Supabase credentials and does
 not write to the database:
 

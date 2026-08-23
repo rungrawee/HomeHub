@@ -6,6 +6,7 @@ from pathlib import Path
 
 from led_monitor import (
     calculate_final_price,
+    choose_asset_image_url,
     extract_landsmaps_location,
     extract_sale_method,
     extract_standard_deposit,
@@ -23,6 +24,25 @@ from led_monitor import (
 
 
 class LedMonitorTests(unittest.TestCase):
+    def test_asset_image_chooses_largest_photo_and_ignores_logo(self):
+        candidates = [
+            {"url": "https://example.com/logo.png", "width": 900, "height": 500},
+            {"url": "https://example.com/property-small.jpg", "width": 320, "height": 200},
+            {"url": "https://example.com/property-main.jpg", "width": 900, "height": 600},
+        ]
+        self.assertEqual(
+            choose_asset_image_url(candidates),
+            "https://example.com/property-main.jpg",
+        )
+
+    def test_asset_image_returns_empty_when_no_property_photo_exists(self):
+        self.assertEqual(
+            choose_asset_image_url(
+                [{"url": "https://example.com/icon.png", "width": 32, "height": 32}]
+            ),
+            "",
+        )
+
     def test_normalize_text_collapses_whitespace(self):
         self.assertEqual(normalize_text("  นนทบุรี\n  เมือง  "), "นนทบุรี เมือง")
 

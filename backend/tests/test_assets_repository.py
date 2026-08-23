@@ -95,6 +95,7 @@ class AssetsRepositoryTests(unittest.TestCase):
         )
         self.assertIn(("range", 10, 19), client.query.calls)
         select_call = next(call for call in client.query.calls if call[0] == "select")
+        self.assertIn("image_url", select_call[1])
         self.assertIn("auctions!inner", select_call[1])
         self.assertEqual(select_call[2], "exact")
 

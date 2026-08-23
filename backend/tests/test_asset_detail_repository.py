@@ -67,6 +67,8 @@ class AssetDetailRepositoryTests(unittest.TestCase):
         )
         self.assertIn(("eq", "id", "asset-1"), client.query.calls)
         self.assertIn(("limit", 1), client.query.calls)
+        select_call = next(call for call in client.query.calls if call[0] == "select")
+        self.assertIn("image_url", select_call[1])
 
     def test_returns_none_when_not_found(self):
         self.assertIsNone(SupabaseRepository(FakeClient([])).get_asset("missing"))
