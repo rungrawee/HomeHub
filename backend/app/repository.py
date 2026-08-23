@@ -8,6 +8,14 @@ ASSET_LIST_COLUMNS = (
     "auctions(auction_round,auction_date,status)"
 )
 
+ASSET_DETAIL_COLUMNS = (
+    "id,source_key,lot,sequence,case_number,asset_type,deed_number,"
+    "rai,ngan,square_wah,area_detail,price,price_final,deposit_amount,"
+    "tambon,amphur,province,owner_name,officer_name,sale_location,location,"
+    "detail_url,raw_detail,source_updated_at,created_at,updated_at,"
+    "auctions(auction_round,auction_date,status)"
+)
+
 
 class RepositoryError(RuntimeError):
     """Raised when Supabase returns an unusable response."""
@@ -152,3 +160,24 @@ class SupabaseRepository:
             .execute()
         )
         return bool(getattr(response, "data", None))
+
+    def get_asset(self, asset_id: str) -> dict[str, Any] | None:
+        response = (
+            self.client.table("assets")
+            .select(ASSET_DETAIL_COLUMNS)
+            .eq("id", asset_id)
+            .limit(1)
+            .execute()
+        )
+        rows = getattr(response, "data", None) or []
+        if not rows:
+            return None
+        asset = rows[0]
+        asset["auctions"] = sorted(
+            asset.get("auctions") or [],
+            key=lambda auction: (
+                auction.get("auction_round") is None,
+                auction.get("auction_round") or 0,
+            ),
+        )
+        return asset
