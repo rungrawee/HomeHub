@@ -51,7 +51,7 @@ function AssetCard({ asset }) {
       </div>
       <div className="price-label">ราคาทรัพย์</div>
       <div className="price">{formatPrice(asset.price_final)}</div>
-      <div className="next-auction"><Icon name="calendar" /><span><small>วันประมูลถัดไป</small>{asset.next_auction_date ? <p>ประมูลครั้งที่ {asset.next_auction_round || "-"} <strong>วันที่ {formatAuctionDate(asset.next_auction_date)}</strong></p> : <p>ยังไม่มีวันประมูลถัดไป</p>}</span></div>
+      <div className="next-auction"><Icon name="calendar" /><span>{asset.next_auction_date ? <p>ประมูลครั้งที่ {asset.next_auction_round || "-"} <strong>วันที่ {formatAuctionDate(asset.next_auction_date)}</strong></p> : <p>ยังไม่มีวันประมูลถัดไป</p>}</span></div>
       <div className="asset-facts">
         <div><span>ขนาดพื้นที่</span><strong>{formatArea(asset)}</strong></div>
         <div><span>เลขที่โฉนด</span><strong>{asset.deed_number || "-"}</strong></div>
