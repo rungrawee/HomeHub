@@ -1,8 +1,9 @@
 from datetime import date
 from decimal import Decimal
 from typing import Annotated, Any
+from uuid import UUID
 
-from fastapi import Depends, FastAPI, Query
+from fastapi import Depends, FastAPI, HTTPException, Query
 
 from app.repository import SupabaseRepository
 from app.supabase_client import create_supabase_client
@@ -57,6 +58,16 @@ def create_app(repository: Any | None = None) -> FastAPI:
                 "total_pages": (total + page_size - 1) // page_size,
             },
         }
+
+    @app.get("/assets/{asset_id}")
+    def get_asset(
+        asset_id: UUID,
+        repository: Annotated[Any, Depends(get_repository)],
+    ) -> dict[str, object]:
+        asset = repository.get_asset(str(asset_id))
+        if asset is None:
+            raise HTTPException(status_code=404, detail="Asset not found")
+        return asset
 
     return app
 

@@ -66,6 +66,9 @@ PYTHONPATH=backend .venv/bin/python -m uvicorn app.main:app --reload
 `deed_number`, `min_price`, `max_price`, `auction_date_from`,
 `auction_date_to`, `page`, and `page_size` query parameters.
 
+`GET /assets/{id}` returns the full asset record and its auction history. The
+asset ID must be a UUID; missing assets return HTTP 404.
+
 Preview location updates from the latest scraper CSV:
 
 ```bash
