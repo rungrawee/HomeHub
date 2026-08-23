@@ -40,7 +40,7 @@ def import_csv(
             raise ValueError("repository is required unless dry_run=True")
         asset_id = repository.upsert_asset(mapped.values)
         summary.assets_upserted += 1
-        summary.auctions_upserted += repository.upsert_auctions(
+        summary.auctions_upserted += repository.sync_auctions(
             asset_id, list(mapped.auctions)
         )
     return summary

@@ -308,6 +308,15 @@ def result_key(row: dict) -> tuple[str, ...]:
     )
 
 
+def asset_identity_key(row: dict) -> tuple[str, ...]:
+    """Identify an existing asset without relying on deed number alone."""
+    return (
+        normalize_text(row.get("หมายเลขคดี", "")),
+        normalize_text(row.get("ลำดับ", "")),
+        normalize_text(row.get("โฉนดที่ดิน", "")),
+    )
+
+
 def open_row_and_scrape_detail(page, row_index: int) -> dict:
     row = page.locator(f"{TABLE_SELECTOR} tbody tr").nth(row_index)
 
@@ -635,7 +644,7 @@ def restore_existing_locations(results: list[dict], filename: str) -> int:
         return 0
 
     locations = {
-        result_key(row): normalize_text(row.get("Location", ""))
+        asset_identity_key(row): normalize_text(row.get("Location", ""))
         for row in existing_rows
         if normalize_text(row.get("Location", ""))
     }
@@ -643,7 +652,7 @@ def restore_existing_locations(results: list[dict], filename: str) -> int:
     for row in results:
         if normalize_text(row.get("Location", "")):
             continue
-        location = locations.get(result_key(row), "")
+        location = locations.get(asset_identity_key(row), "")
         if location:
             row["Location"] = location
             row.pop("Location_error", None)
