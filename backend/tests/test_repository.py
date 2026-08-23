@@ -18,6 +18,14 @@ class FakeQuery:
         self.calls.append(("upsert", values, on_conflict))
         return self
 
+    def select(self, columns):
+        self.calls.append(("select", columns))
+        return self
+
+    def range(self, start, end):
+        self.calls.append(("range", start, end))
+        return self
+
     def execute(self):
         return self.response
 
@@ -69,6 +77,16 @@ class RepositoryTests(unittest.TestCase):
         client = FakeClient(FakeResponse([]))
         self.assertEqual(SupabaseRepository(client).upsert_auctions("asset-1", []), 0)
         self.assertEqual(client.query.calls, [])
+
+    def test_fetch_all_selects_requested_page(self):
+        client = FakeClient(FakeResponse([{"id": "asset-1"}]))
+
+        rows = SupabaseRepository(client).fetch_all("assets", "id", page_size=2)
+
+        self.assertEqual(rows, [{"id": "asset-1"}])
+        self.assertEqual(client.table_name, "assets")
+        self.assertIn(("select", "id"), client.query.calls)
+        self.assertIn(("range", 0, 1), client.query.calls)
 
 
 if __name__ == "__main__":
