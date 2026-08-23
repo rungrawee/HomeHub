@@ -67,9 +67,14 @@ main { width: min(1320px, calc(100% - 40px)); margin: 0 auto; padding: 22px 0 64
 .asset-facts div { display: flex; flex-direction: column; }
 .asset-facts span, .asset-facts small { color: var(--muted); font-size: 12px; }
 .asset-facts strong { margin: 2px 0; font-size: 19px; }
-.address { display: flex; align-items: flex-start; gap: 9px; min-height: 48px; color: #47566d; }
-.address svg { flex: 0 0 auto; color: var(--warm); }
-.map-link { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 17px; padding: 11px; color: var(--blue); background: #f3f8ff; border: 1px solid #cfe1fa; border-radius: 10px; font-weight: 700; text-decoration: none; }
+.next-auction { display: flex; align-items: center; gap: 9px; margin-top: 14px; padding: 10px 12px; color: #34445e; background: #fff9ed; border-radius: 10px; }
+.next-auction svg { flex: 0 0 auto; color: #e7941e; }
+.next-auction span, .map-link span { display: flex; min-width: 0; flex-direction: column; }
+.next-auction small, .map-link small { color: var(--muted); font-size: 12px; font-weight: 500; }
+.next-auction strong { font-size: 14px; }
+.map-link { display: flex; align-items: center; justify-content: flex-start; gap: 10px; margin-top: 17px; padding: 11px 13px; color: var(--blue); background: #f3f8ff; border: 1px solid #cfe1fa; border-radius: 10px; font-weight: 700; text-decoration: none; }
+.map-link svg { flex: 0 0 auto; }
+.map-link small { overflow: hidden; margin-top: 2px; text-overflow: ellipsis; white-space: nowrap; }
 .map-link.unavailable { color: #8c97a7; background: #f5f6f8; border-color: #e4e8ee; }
 .empty-state, .error-state { padding: 44px 20px; text-align: center; background: white; border: 1px dashed #cbd7e6; border-radius: 16px; }
 .error-state { color: #a63636; background: #fff7f7; border-color: #efc1c1; }

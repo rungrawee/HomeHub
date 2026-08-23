@@ -1,3 +1,4 @@
+from datetime import date
 from typing import Any
 
 
@@ -17,6 +18,39 @@ ASSET_DETAIL_COLUMNS = (
 )
 
 FILTER_FIELDS = {"province", "amphur", "tambon"}
+PUBLIC_AUCTION_STATUSES = {"-", "งดขายไม่มีผู้สู้ราคา"}
+
+
+def prepare_asset_auctions(
+    asset: dict[str, Any],
+    *,
+    today: date | None = None,
+) -> dict[str, Any]:
+    current_date = today or date.today()
+    auctions = [
+        auction
+        for auction in asset.get("auctions") or []
+        if str(auction.get("status") or "").strip() in PUBLIC_AUCTION_STATUSES
+    ]
+    auctions.sort(
+        key=lambda auction: (
+            str(auction.get("auction_date") or "9999-12-31"),
+            auction.get("auction_round") or 0,
+        )
+    )
+    upcoming_dates = []
+    for auction in auctions:
+        try:
+            auction_date = date.fromisoformat(str(auction.get("auction_date")))
+        except ValueError:
+            continue
+        if auction_date >= current_date:
+            upcoming_dates.append(auction_date)
+    asset["auctions"] = auctions
+    asset["next_auction_date"] = (
+        min(upcoming_dates).isoformat() if upcoming_dates else None
+    )
+    return asset
 
 
 class RepositoryError(RuntimeError):
@@ -147,7 +181,11 @@ class SupabaseRepository:
             .range(offset, offset + page_size - 1)
             .execute()
         )
-        return getattr(response, "data", None) or [], int(
+        rows = [
+            prepare_asset_auctions(asset)
+            for asset in (getattr(response, "data", None) or [])
+        ]
+        return rows, int(
             getattr(response, "count", None) or 0
         )
 
@@ -180,15 +218,7 @@ class SupabaseRepository:
         rows = getattr(response, "data", None) or []
         if not rows:
             return None
-        asset = rows[0]
-        asset["auctions"] = sorted(
-            asset.get("auctions") or [],
-            key=lambda auction: (
-                auction.get("auction_round") is None,
-                auction.get("auction_round") or 0,
-            ),
-        )
-        return asset
+        return prepare_asset_auctions(rows[0])
 
     def list_filter_values(
         self,

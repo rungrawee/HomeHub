@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { formatArea, googleMapsUrl, matchesArea } from "./formatters";
+import {
+  formatArea,
+  formatAuctionDate,
+  googleMapsUrl,
+  matchesArea,
+} from "./formatters";
 
 describe("asset formatters", () => {
   it("converts ngan to square wah and hides zero rai", () => {
@@ -26,6 +31,11 @@ describe("asset formatters", () => {
       "https://www.google.com/maps?q=13.8%2C100.4",
     );
     expect(googleMapsUrl("")).toBe("");
+  });
+
+  it("formats the next auction date in Thai", () => {
+    expect(formatAuctionDate("2026-09-10")).toContain("10 กันยายน");
+    expect(formatAuctionDate(null)).toBe("ยังไม่มีวันประมูลถัดไป");
   });
 
   it("matches all configured area conditions", () => {

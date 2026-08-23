@@ -45,8 +45,16 @@ class AssetDetailRepositoryTests(unittest.TestCase):
                 {
                     "id": "asset-1",
                     "auctions": [
-                        {"auction_round": 2},
-                        {"auction_round": 1},
+                        {
+                            "auction_round": 2,
+                            "auction_date": "2099-02-01",
+                            "status": "-",
+                        },
+                        {
+                            "auction_round": 1,
+                            "auction_date": "2099-01-01",
+                            "status": "งดขายไม่มีผู้สู้ราคา",
+                        },
                     ],
                 }
             ]

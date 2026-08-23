@@ -35,6 +35,17 @@ export function googleMapsUrl(location) {
     : "";
 }
 
+export function formatAuctionDate(value) {
+  if (!value) return "ยังไม่มีวันประมูลถัดไป";
+  const date = new Date(`${value}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return "ยังไม่มีวันประมูลถัดไป";
+  return new Intl.DateTimeFormat("th-TH", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(date);
+}
+
 function compare(actual, condition, expected) {
   if (expected === "") return true;
   const left = Number(actual || 0);
