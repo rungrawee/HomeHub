@@ -134,3 +134,21 @@ class SupabaseRepository:
         return getattr(response, "data", None) or [], int(
             getattr(response, "count", None) or 0
         )
+
+    def update_asset_fields(
+        self,
+        source_key: str,
+        values: dict[str, object],
+    ) -> bool:
+        if not source_key:
+            raise RepositoryError("asset source_key is required")
+        if not values:
+            return False
+
+        response = (
+            self.client.table("assets")
+            .update(values)
+            .eq("source_key", source_key)
+            .execute()
+        )
+        return bool(getattr(response, "data", None))
