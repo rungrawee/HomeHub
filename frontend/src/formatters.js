@@ -9,7 +9,23 @@ export function formatPrice(value) {
 }
 
 export function formatArea(asset) {
-  return `${asset.rai || 0}:${asset.ngan || 0}:${asset.square_wah || 0}`;
+  const rai = Number(asset.rai || 0);
+  const ngan = Number(asset.ngan || 0);
+  const squareWah = Number(asset.square_wah || 0);
+  const safeRai = Number.isFinite(rai) ? rai : 0;
+  const totalSquareWah =
+    (Number.isFinite(ngan) ? ngan : 0) * 100 +
+    (Number.isFinite(squareWah) ? squareWah : 0);
+  const numberFormat = new Intl.NumberFormat("th-TH", {
+    maximumFractionDigits: 2,
+  });
+  const parts = [];
+
+  if (safeRai > 0) parts.push(`${numberFormat.format(safeRai)} ไร่`);
+  if (totalSquareWah > 0 || parts.length === 0) {
+    parts.push(`${numberFormat.format(totalSquareWah)} ตร.ว.`);
+  }
+  return parts.join(" ");
 }
 
 export function googleMapsUrl(location) {

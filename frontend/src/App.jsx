@@ -51,7 +51,7 @@ function AssetCard({ asset }) {
       <div className="price-label">ราคาทรัพย์</div>
       <div className="price">{formatPrice(asset.price_final)}</div>
       <div className="asset-facts">
-        <div><span>ขนาดพื้นที่</span><strong>{formatArea(asset)}</strong><small>ไร่ : งาน : ตร.ว.</small></div>
+        <div><span>ขนาดพื้นที่</span><strong>{formatArea(asset)}</strong></div>
         <div><span>เลขที่โฉนด</span><strong>{asset.deed_number || "-"}</strong></div>
       </div>
       <div className="address"><Icon name="land" /><span>{address || "ไม่พบข้อมูลที่อยู่"}</span></div>
