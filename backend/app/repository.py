@@ -1,6 +1,14 @@
 from typing import Any
 
 
+ASSET_LIST_COLUMNS = (
+    "id,source_key,lot,sequence,case_number,asset_type,deed_number,"
+    "rai,ngan,square_wah,area_detail,price,price_final,deposit_amount,"
+    "tambon,amphur,province,sale_location,location,detail_url,updated_at,"
+    "auctions(auction_round,auction_date,status)"
+)
+
+
 class RepositoryError(RuntimeError):
     """Raised when Supabase returns an unusable response."""
 
@@ -74,3 +82,55 @@ class SupabaseRepository:
             if len(page) < page_size:
                 return rows
             offset += page_size
+
+    def list_assets(
+        self,
+        *,
+        page: int,
+        page_size: int,
+        province: str | None = None,
+        amphur: str | None = None,
+        tambon: str | None = None,
+        asset_type: str | None = None,
+        deed_number: str | None = None,
+        min_price: str | None = None,
+        max_price: str | None = None,
+        auction_date_from: str | None = None,
+        auction_date_to: str | None = None,
+    ) -> tuple[list[dict[str, Any]], int]:
+        if page < 1 or page_size < 1:
+            raise ValueError("page and page_size must be greater than zero")
+
+        columns = ASSET_LIST_COLUMNS
+        if auction_date_from or auction_date_to:
+            columns = columns.replace("auctions(", "auctions!inner(")
+        query = self.client.table("assets").select(columns, count="exact")
+
+        for field, value in (
+            ("province", province),
+            ("amphur", amphur),
+            ("tambon", tambon),
+            ("asset_type", asset_type),
+        ):
+            if value:
+                query = query.eq(field, value)
+        if deed_number:
+            query = query.ilike("deed_number", f"%{deed_number}%")
+        if min_price is not None:
+            query = query.gte("price_final", min_price)
+        if max_price is not None:
+            query = query.lte("price_final", max_price)
+        if auction_date_from:
+            query = query.gte("auctions.auction_date", auction_date_from)
+        if auction_date_to:
+            query = query.lte("auctions.auction_date", auction_date_to)
+
+        offset = (page - 1) * page_size
+        response = (
+            query.order("updated_at", desc=True)
+            .range(offset, offset + page_size - 1)
+            .execute()
+        )
+        return getattr(response, "data", None) or [], int(
+            getattr(response, "count", None) or 0
+        )
