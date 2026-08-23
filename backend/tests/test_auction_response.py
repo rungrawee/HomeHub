@@ -34,6 +34,7 @@ class AuctionResponseTests(unittest.TestCase):
             {"-", "งดขายไม่มีผู้สู้ราคา"},
         )
         self.assertEqual(result["next_auction_date"], "2026-09-10")
+        self.assertEqual(result["next_auction_round"], 2)
 
     def test_returns_none_when_no_upcoming_auction_exists(self):
         result = prepare_asset_auctions(
@@ -50,6 +51,7 @@ class AuctionResponseTests(unittest.TestCase):
         )
 
         self.assertIsNone(result["next_auction_date"])
+        self.assertIsNone(result["next_auction_round"])
 
 
 if __name__ == "__main__":

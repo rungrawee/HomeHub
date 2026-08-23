@@ -74,7 +74,14 @@ class AssetsRepositoryTests(unittest.TestCase):
 
         self.assertEqual(
             rows,
-            [{"id": "asset-1", "auctions": [], "next_auction_date": None}],
+            [
+                {
+                    "id": "asset-1",
+                    "auctions": [],
+                    "next_auction_date": None,
+                    "next_auction_round": None,
+                }
+            ],
         )
         self.assertEqual(total, 21)
         self.assertIn(("neq", "asset_type", ""), client.query.calls)

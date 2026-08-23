@@ -71,7 +71,8 @@ main { width: min(1320px, calc(100% - 40px)); margin: 0 auto; padding: 22px 0 64
 .next-auction svg { flex: 0 0 auto; color: #e7941e; }
 .next-auction span, .map-link span { display: flex; min-width: 0; flex-direction: column; }
 .next-auction small, .map-link small { color: var(--muted); font-size: 12px; font-weight: 500; }
-.next-auction strong { font-size: 14px; }
+.next-auction p { margin: 1px 0 0; font-size: 14px; }
+.next-auction strong { color: var(--blue-dark); }
 .map-link { display: flex; align-items: center; justify-content: flex-start; gap: 10px; margin-top: 17px; padding: 11px 13px; color: var(--blue); background: #f3f8ff; border: 1px solid #cfe1fa; border-radius: 10px; font-weight: 700; text-decoration: none; }
 .map-link svg { flex: 0 0 auto; }
 .map-link small { overflow: hidden; margin-top: 2px; text-overflow: ellipsis; white-space: nowrap; }

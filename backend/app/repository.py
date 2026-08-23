@@ -38,17 +38,21 @@ def prepare_asset_auctions(
             auction.get("auction_round") or 0,
         )
     )
-    upcoming_dates = []
+    next_auction = None
     for auction in auctions:
         try:
             auction_date = date.fromisoformat(str(auction.get("auction_date")))
         except ValueError:
             continue
         if auction_date >= current_date:
-            upcoming_dates.append(auction_date)
+            next_auction = auction
+            break
     asset["auctions"] = auctions
     asset["next_auction_date"] = (
-        min(upcoming_dates).isoformat() if upcoming_dates else None
+        next_auction.get("auction_date") if next_auction else None
+    )
+    asset["next_auction_round"] = (
+        next_auction.get("auction_round") if next_auction else None
     )
     return asset
 
