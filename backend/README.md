@@ -66,6 +66,15 @@ PYTHONPATH=backend .venv/bin/python -m uvicorn app.main:app --reload
 `deed_number`, `min_price`, `max_price`, `auction_date_from`,
 `auction_date_to`, `page`, and `page_size` query parameters.
 
+Preview location updates from the latest scraper CSV:
+
+```bash
+PYTHONPATH=backend .venv/bin/python backend/backfill_locations.py scraper/result.csv
+```
+
+After reviewing the summary, add `--apply` to update Supabase. Blank CSV values
+are never written over existing database values.
+
 The real import uses `source_key` and auction composite keys for idempotent
 upserts. Running the same CSV again should update existing records rather than
 creating duplicates.
