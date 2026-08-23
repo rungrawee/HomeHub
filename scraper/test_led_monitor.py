@@ -5,6 +5,7 @@ from decimal import Decimal
 from pathlib import Path
 
 from led_monitor import (
+    asset_identity_key,
     calculate_final_price,
     choose_asset_image_url,
     enrich_locations_with_landsmaps,
@@ -66,6 +67,14 @@ class LedMonitorTests(unittest.TestCase):
         first = {"หมายเลขคดี": "A/1", "ล็อต": "1", "ลำดับ": "2", "จังหวัด": "นนทบุรี"}
         second = {"หมายเลขคดี": " A/1 ", "ล็อต": "1", "ลำดับ": "2", "จังหวัด": "นนทบุรี"}
         self.assertEqual(result_key(first), result_key(second))
+
+    def test_asset_identity_requires_case_sequence_and_deed(self):
+        base = {"หมายเลขคดี": "A/1", "ลำดับ": "2", "โฉนดที่ดิน": "166116"}
+        other_case = {**base, "หมายเลขคดี": "B/1"}
+        other_deed = {**base, "โฉนดที่ดิน": "166117"}
+
+        self.assertNotEqual(asset_identity_key(base), asset_identity_key(other_case))
+        self.assertNotEqual(asset_identity_key(base), asset_identity_key(other_deed))
 
     def test_restores_only_missing_locations_from_existing_csv(self):
         existing = {

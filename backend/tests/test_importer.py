@@ -15,7 +15,7 @@ class FakeRepository:
         self.assets.append(values)
         return f"asset-{len(self.assets)}"
 
-    def upsert_auctions(self, asset_id, auctions):
+    def sync_auctions(self, asset_id, auctions):
         self.auctions.extend((asset_id, auction) for auction in auctions)
         return len(auctions)
 

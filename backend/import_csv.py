@@ -36,7 +36,7 @@ def main() -> None:
         print(f"Auctions planned: {summary.auctions_planned}")
     else:
         print(f"Assets upserted: {summary.assets_upserted}")
-        print(f"Auctions upserted: {summary.auctions_upserted}")
+        print(f"Auctions synchronized: {summary.auctions_upserted}")
 
 
 if __name__ == "__main__":

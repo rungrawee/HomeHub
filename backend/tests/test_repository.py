@@ -39,6 +39,10 @@ class FakeClient:
         self.table_name = name
         return self.query
 
+    def rpc(self, name, params):
+        self.query.calls.append(("rpc", name, params))
+        return self.query
+
 
 class RepositoryTests(unittest.TestCase):
     def test_upsert_asset_uses_source_key_conflict(self):
@@ -59,24 +63,24 @@ class RepositoryTests(unittest.TestCase):
         with self.assertRaises(RepositoryError):
             SupabaseRepository(client).upsert_asset({"source_key": "CASE|1|81662"})
 
-    def test_upsert_auctions_uses_composite_conflict_key(self):
-        client = FakeClient(FakeResponse([]))
+    def test_sync_auctions_calls_atomic_replacement_rpc(self):
+        client = FakeClient(FakeResponse(1))
         repository = SupabaseRepository(client)
-        count = repository.upsert_auctions(
+        count = repository.sync_auctions(
             "asset-1",
             [AuctionRecord(1, "2026-04-23", "งดขายไม่มีผู้สู้ราคา")],
         )
 
         self.assertEqual(count, 1)
-        self.assertEqual(client.table_name, "auctions")
-        call = client.query.calls[-1]
-        self.assertEqual(call[2], "asset_id,auction_round,auction_date")
-        self.assertEqual(call[1][0]["asset_id"], "asset-1")
+        call = client.query.calls[0]
+        self.assertEqual(call[0:2], ("rpc", "sync_asset_auctions"))
+        self.assertEqual(call[2]["p_asset_id"], "asset-1")
+        self.assertEqual(call[2]["p_auctions"][0]["auction_round"], 1)
 
-    def test_empty_auctions_do_not_call_supabase(self):
-        client = FakeClient(FakeResponse([]))
-        self.assertEqual(SupabaseRepository(client).upsert_auctions("asset-1", []), 0)
-        self.assertEqual(client.query.calls, [])
+    def test_empty_auctions_still_clear_stale_database_rows(self):
+        client = FakeClient(FakeResponse(0))
+        self.assertEqual(SupabaseRepository(client).sync_auctions("asset-1", []), 0)
+        self.assertEqual(client.query.calls[0][2]["p_auctions"], [])
 
     def test_fetch_all_selects_requested_page(self):
         client = FakeClient(FakeResponse([{"id": "asset-1"}]))
