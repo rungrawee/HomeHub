@@ -78,6 +78,10 @@ PYTHONPATH=backend .venv/bin/python backend/backfill_locations.py scraper/result
 After reviewing the summary, add `--apply` to update Supabase. Blank CSV values
 are never written over existing database values.
 
+Set `CORS_ORIGINS` in `backend/.env` to a comma-separated list of frontend
+origins. Do not use `*` with a production API. The Supabase service-role key
+must remain only in the backend environment and must never be sent to a browser.
+
 The real import uses `source_key` and auction composite keys for idempotent
 upserts. Running the same CSV again should update existing records rather than
 creating duplicates.

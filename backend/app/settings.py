@@ -10,6 +10,7 @@ BACKEND_DIR = Path(__file__).resolve().parents[1]
 class Settings(BaseSettings):
     supabase_url: str = ""
     supabase_service_role_key: str = ""
+    cors_origins: str = "http://localhost:3000,http://localhost:5173"
 
     model_config = SettingsConfigDict(
         env_file=BACKEND_DIR / ".env",
@@ -28,6 +29,13 @@ class Settings(BaseSettings):
                 "Missing required Supabase environment variables: "
                 + ", ".join(missing)
             )
+
+    def allowed_cors_origins(self) -> list[str]:
+        return [
+            origin.strip()
+            for origin in self.cors_origins.split(",")
+            if origin.strip()
+        ]
 
 
 @lru_cache

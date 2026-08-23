@@ -60,6 +60,17 @@ class SupabaseClientTests(unittest.TestCase):
         self.assertEqual(settings.supabase_url, "https://file.supabase.co")
         self.assertEqual(settings.supabase_service_role_key, "file-secret")
 
+    def test_cors_origins_are_trimmed_and_empty_values_removed(self):
+        settings = Settings(
+            _env_file=None,
+            cors_origins="https://one.example, https://two.example, ",
+        )
+
+        self.assertEqual(
+            settings.allowed_cors_origins(),
+            ["https://one.example", "https://two.example"],
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

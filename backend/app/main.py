@@ -1,16 +1,55 @@
 from datetime import date
 from decimal import Decimal
+import logging
 from typing import Annotated, Any
 from uuid import UUID
+from uuid import uuid4
 
-from fastapi import Depends, FastAPI, HTTPException, Query
+from fastapi import Depends, FastAPI, HTTPException, Query, Request
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
-from app.repository import SupabaseRepository
+from app.repository import RepositoryError, SupabaseRepository
+from app.settings import Settings, get_settings
 from app.supabase_client import create_supabase_client
 
 
-def create_app(repository: Any | None = None) -> FastAPI:
+LOGGER = logging.getLogger("homehub.api")
+
+
+def create_app(
+    repository: Any | None = None,
+    settings: Settings | None = None,
+) -> FastAPI:
+    app_settings = settings or get_settings()
     app = FastAPI(title="HomeHub API", version="0.1.0")
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=app_settings.allowed_cors_origins(),
+        allow_credentials=False,
+        allow_methods=["GET"],
+        allow_headers=["Accept", "Content-Type", "X-Request-ID"],
+    )
+
+    @app.middleware("http")
+    async def add_security_headers(request: Request, call_next):
+        request_id = request.headers.get("X-Request-ID") or str(uuid4())
+        response = await call_next(request)
+        response.headers["X-Request-ID"] = request_id
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["Referrer-Policy"] = "no-referrer"
+        return response
+
+    @app.exception_handler(RepositoryError)
+    async def handle_repository_error(
+        request: Request, error: RepositoryError
+    ) -> JSONResponse:
+        LOGGER.exception("Supabase repository error on %s", request.url.path)
+        return JSONResponse(
+            status_code=502,
+            content={"detail": "Data service temporarily unavailable"},
+        )
 
     def get_repository() -> Any:
         return repository or SupabaseRepository(create_supabase_client())
@@ -34,6 +73,19 @@ def create_app(repository: Any | None = None) -> FastAPI:
         auction_date_from: date | None = None,
         auction_date_to: date | None = None,
     ) -> dict[str, object]:
+        if min_price is not None and max_price is not None and min_price > max_price:
+            raise HTTPException(
+                status_code=422, detail="min_price must not exceed max_price"
+            )
+        if (
+            auction_date_from is not None
+            and auction_date_to is not None
+            and auction_date_from > auction_date_to
+        ):
+            raise HTTPException(
+                status_code=422,
+                detail="auction_date_from must not exceed auction_date_to",
+            )
         items, total = repository.list_assets(
             page=page,
             page_size=page_size,
