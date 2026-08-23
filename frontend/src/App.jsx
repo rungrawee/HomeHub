@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { getFilterOptions, searchAssets } from "./api";
-import { formatArea, formatPrice, googleMapsUrl, matchesArea } from "./formatters";
+import { calculateDiscountPercent, formatArea, formatAuctionDate, formatPrice, googleMapsUrl, matchesArea } from "./formatters";
 
 const INITIAL_FILTERS = {
   province: "", amphur: "", tambon: "",
@@ -18,6 +18,7 @@ function Icon({ name }) {
     land: <path d="m3 17 5-5 4 4 3-3 6 6M8 12V5h9v8" />,
     refresh: <path d="M20 11a8 8 0 1 0-2.34 5.66M20 4v7h-7" />,
     filter: <path d="M4 5h16l-6 7v5l-4 2v-7L4 5Z" />,
+    calendar: <path d="M6 2v4M18 2v4M3 9h18M5 4h14a2 2 0 0 1 2 2v14H3V6a2 2 0 0 1 2-2Z" />,
   };
   return <svg viewBox="0 0 24 24" aria-hidden="true">{paths[name]}</svg>;
 }
@@ -42,24 +43,26 @@ function AreaField({ label, condition, value, onCondition, onValue }) {
 function AssetCard({ asset }) {
   const mapUrl = googleMapsUrl(asset.location);
   const address = [asset.tambon, asset.amphur, asset.province].filter(Boolean).join(" • ");
+  const discountPercent = calculateDiscountPercent(asset.price, asset.price_final);
   return (
     <article className="asset-card">
       <div className="card-topline">
         <span className="asset-type">{asset.asset_type || "ไม่ระบุประเภท"}</span>
         <span className="case-number">คดี {asset.case_number || "-"}</span>
       </div>
-      <div className="price-label">ราคาทรัพย์</div>
+      {discountPercent !== null && <div className="original-price-row"><span>ราคาประเมิน</span><s>{formatPrice(asset.price)}</s><strong>ลด {discountPercent}%</strong></div>}
+      <div className="price-label">{discountPercent !== null ? "ราคาหลังปรับลด" : "ราคาทรัพย์"}</div>
       <div className="price">{formatPrice(asset.price_final)}</div>
+      <div className="next-auction"><Icon name="calendar" /><span>{asset.next_auction_date ? <p>ประมูลครั้งที่ {asset.next_auction_round || "-"} <strong>วันที่ {formatAuctionDate(asset.next_auction_date)}</strong></p> : <p>ยังไม่มีวันประมูลถัดไป</p>}</span></div>
       <div className="asset-facts">
-        <div><span>ขนาดพื้นที่</span><strong>{formatArea(asset)}</strong><small>ไร่ : งาน : ตร.ว.</small></div>
+        <div><span>ขนาดพื้นที่</span><strong>{formatArea(asset)}</strong></div>
         <div><span>เลขที่โฉนด</span><strong>{asset.deed_number || "-"}</strong></div>
       </div>
-      <div className="address"><Icon name="land" /><span>{address || "ไม่พบข้อมูลที่อยู่"}</span></div>
       {mapUrl ? (
         <a className="map-link" href={mapUrl} target="_blank" rel="noreferrer">
-          <Icon name="pin" />เปิดตำแหน่งบน Google Maps
+          <Icon name="pin" /><span><strong>เปิดตำแหน่งบน Google Maps</strong><small>{address || "ไม่พบข้อมูลที่อยู่"}</small></span>
         </a>
-      ) : <span className="map-link unavailable">ไม่มีข้อมูลพิกัด</span>}
+      ) : <span className="map-link unavailable"><span><strong>ไม่มีข้อมูลพิกัด</strong><small>{address || "ไม่พบข้อมูลที่อยู่"}</small></span></span>}
     </article>
   );
 }

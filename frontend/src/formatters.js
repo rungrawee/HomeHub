@@ -8,8 +8,38 @@ export function formatPrice(value) {
   }).format(Number.isFinite(amount) ? amount : 0);
 }
 
+export function calculateDiscountPercent(originalPrice, finalPrice) {
+  const original = Number(originalPrice);
+  const final = Number(finalPrice);
+  if (
+    !Number.isFinite(original) ||
+    !Number.isFinite(final) ||
+    original <= 0 ||
+    final >= original
+  ) {
+    return null;
+  }
+  return Math.round(((original - final) / original) * 1000) / 10;
+}
+
 export function formatArea(asset) {
-  return `${asset.rai || 0}:${asset.ngan || 0}:${asset.square_wah || 0}`;
+  const rai = Number(asset.rai || 0);
+  const ngan = Number(asset.ngan || 0);
+  const squareWah = Number(asset.square_wah || 0);
+  const safeRai = Number.isFinite(rai) ? rai : 0;
+  const totalSquareWah =
+    (Number.isFinite(ngan) ? ngan : 0) * 100 +
+    (Number.isFinite(squareWah) ? squareWah : 0);
+  const numberFormat = new Intl.NumberFormat("th-TH", {
+    maximumFractionDigits: 2,
+  });
+  const parts = [];
+
+  if (safeRai > 0) parts.push(`${numberFormat.format(safeRai)} ไร่`);
+  if (totalSquareWah > 0 || parts.length === 0) {
+    parts.push(`${numberFormat.format(totalSquareWah)} ตร.ว.`);
+  }
+  return parts.join(" ");
 }
 
 export function googleMapsUrl(location) {
@@ -17,6 +47,17 @@ export function googleMapsUrl(location) {
   return coordinate
     ? `https://www.google.com/maps?q=${encodeURIComponent(coordinate)}`
     : "";
+}
+
+export function formatAuctionDate(value) {
+  if (!value) return "ยังไม่มีวันประมูลถัดไป";
+  const date = new Date(`${value}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return "ยังไม่มีวันประมูลถัดไป";
+  return new Intl.DateTimeFormat("th-TH", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(date);
 }
 
 function compare(actual, condition, expected) {

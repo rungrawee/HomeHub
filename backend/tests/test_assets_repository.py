@@ -72,7 +72,17 @@ class AssetsRepositoryTests(unittest.TestCase):
             auction_date_to="2026-08-31",
         )
 
-        self.assertEqual(rows, [{"id": "asset-1"}])
+        self.assertEqual(
+            rows,
+            [
+                {
+                    "id": "asset-1",
+                    "auctions": [],
+                    "next_auction_date": None,
+                    "next_auction_round": None,
+                }
+            ],
+        )
         self.assertEqual(total, 21)
         self.assertIn(("neq", "asset_type", ""), client.query.calls)
         self.assertIn(("neq", "province", ""), client.query.calls)

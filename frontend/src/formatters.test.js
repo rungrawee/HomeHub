@@ -1,12 +1,36 @@
 import { describe, expect, it } from "vitest";
-import { formatArea, googleMapsUrl, matchesArea } from "./formatters";
+import {
+  calculateDiscountPercent,
+  formatArea,
+  formatAuctionDate,
+  googleMapsUrl,
+  matchesArea,
+} from "./formatters";
 
 describe("asset formatters", () => {
-  it("formats area as rai:ngan:square wah", () => {
+  it("calculates a discount only when final price is lower", () => {
+    expect(calculateDiscountPercent("1500000", "1350000")).toBe(10);
+    expect(calculateDiscountPercent("1500000", "1500000")).toBeNull();
+    expect(calculateDiscountPercent("0", "0")).toBeNull();
+  });
+
+  it("converts ngan to square wah and hides zero rai", () => {
     expect(formatArea({ rai: "0", ngan: "1", square_wah: "20" })).toBe(
-      "0:1:20",
+      "120 ตร.ว.",
     );
-    expect(formatArea({})).toBe("0:0:0");
+    expect(formatArea({ rai: "0", ngan: "0", square_wah: "27" })).toBe(
+      "27 ตร.ว.",
+    );
+  });
+
+  it("shows rai followed by total square wah", () => {
+    expect(formatArea({ rai: "1", ngan: "1", square_wah: "20" })).toBe(
+      "1 ไร่ 120 ตร.ว.",
+    );
+    expect(formatArea({ rai: "4", ngan: "3", square_wah: "30" })).toBe(
+      "4 ไร่ 330 ตร.ว.",
+    );
+    expect(formatArea({})).toBe("0 ตร.ว.");
   });
 
   it("creates a safe Google Maps link", () => {
@@ -14,6 +38,11 @@ describe("asset formatters", () => {
       "https://www.google.com/maps?q=13.8%2C100.4",
     );
     expect(googleMapsUrl("")).toBe("");
+  });
+
+  it("formats the next auction date in Thai", () => {
+    expect(formatAuctionDate("2026-09-10")).toContain("10 กันยายน");
+    expect(formatAuctionDate(null)).toBe("ยังไม่มีวันประมูลถัดไป");
   });
 
   it("matches all configured area conditions", () => {
