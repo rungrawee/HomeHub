@@ -121,6 +121,37 @@ def create_app(
             raise HTTPException(status_code=404, detail="Asset not found")
         return asset
 
+    @app.get("/filters/provinces")
+    def list_provinces(
+        repository: Annotated[Any, Depends(get_repository)],
+    ) -> dict[str, list[str]]:
+        return {"items": repository.list_filter_values("province")}
+
+    @app.get("/filters/amphurs")
+    def list_amphurs(
+        repository: Annotated[Any, Depends(get_repository)],
+        province: Annotated[str, Query(min_length=1)],
+    ) -> dict[str, list[str]]:
+        return {
+            "items": repository.list_filter_values(
+                "amphur", province=province.strip()
+            )
+        }
+
+    @app.get("/filters/tambons")
+    def list_tambons(
+        repository: Annotated[Any, Depends(get_repository)],
+        province: Annotated[str, Query(min_length=1)],
+        amphur: Annotated[str, Query(min_length=1)],
+    ) -> dict[str, list[str]]:
+        return {
+            "items": repository.list_filter_values(
+                "tambon",
+                province=province.strip(),
+                amphur=amphur.strip(),
+            )
+        }
+
     return app
 
 

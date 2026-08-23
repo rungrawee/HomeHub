@@ -16,6 +16,8 @@ ASSET_DETAIL_COLUMNS = (
     "auctions(auction_round,auction_date,status)"
 )
 
+FILTER_FIELDS = {"province", "amphur", "tambon"}
+
 
 class RepositoryError(RuntimeError):
     """Raised when Supabase returns an unusable response."""
@@ -187,3 +189,45 @@ class SupabaseRepository:
             ),
         )
         return asset
+
+    def list_filter_values(
+        self,
+        field: str,
+        *,
+        province: str | None = None,
+        amphur: str | None = None,
+        page_size: int = 1000,
+    ) -> list[str]:
+        if field not in FILTER_FIELDS:
+            raise ValueError(f"Unsupported filter field: {field}")
+        if page_size < 1:
+            raise ValueError("page_size must be greater than zero")
+
+        values: set[str] = set()
+        offset = 0
+        while True:
+            query = (
+                self.client.table("assets")
+                .select(field)
+                .neq("asset_type", "")
+                .neq("province", "")
+                .neq("amphur", "")
+            )
+            if province:
+                query = query.eq("province", province.strip())
+            if amphur:
+                query = query.eq("amphur", amphur.strip())
+            response = (
+                query.order(field)
+                .range(offset, offset + page_size - 1)
+                .execute()
+            )
+            rows = getattr(response, "data", None) or []
+            values.update(
+                str(row.get(field)).strip()
+                for row in rows
+                if row.get(field) and str(row.get(field)).strip()
+            )
+            if len(rows) < page_size:
+                return sorted(values)
+            offset += page_size

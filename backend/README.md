@@ -95,6 +95,14 @@ PYTHONPATH=backend .venv/bin/python backend/verify_backend.py
 The command prints only safe status information and exits with status 1 when
 the backend is not ready. It never prints the Supabase service-role key.
 
+Frontend dropdowns can load valid values from these endpoints:
+
+- `GET /filters/provinces`
+- `GET /filters/amphurs?province=นนทบุรี`
+- `GET /filters/tambons?province=นนทบุรี&amphur=บางบัวทอง`
+
+Only values belonging to complete, publicly visible assets are returned.
+
 The real import uses `source_key` and auction composite keys for idempotent
 upserts. Running the same CSV again should update existing records rather than
 creating duplicates.
