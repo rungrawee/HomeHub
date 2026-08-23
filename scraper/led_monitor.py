@@ -621,6 +621,36 @@ def save_to_csv(results: list[dict], filename: str) -> None:
     print(f"✅ saved CSV: {filename}" if results else f"⚠️ saved empty CSV: {filename}")
 
 
+def restore_existing_locations(results: list[dict], filename: str) -> int:
+    """Reuse coordinates from the previous CSV before contacting LandsMaps."""
+    path = Path(filename)
+    if not path.is_file():
+        return 0
+
+    try:
+        with path.open("r", encoding="utf-8-sig", newline="") as file:
+            existing_rows = list(csv.DictReader(file))
+    except (OSError, csv.Error) as error:
+        print(f"⚠️ อ่าน Location เดิมจาก CSV ไม่สำเร็จ: {error}")
+        return 0
+
+    locations = {
+        result_key(row): normalize_text(row.get("Location", ""))
+        for row in existing_rows
+        if normalize_text(row.get("Location", ""))
+    }
+    restored = 0
+    for row in results:
+        if normalize_text(row.get("Location", "")):
+            continue
+        location = locations.get(result_key(row), "")
+        if location:
+            row["Location"] = location
+            row.pop("Location_error", None)
+            restored += 1
+    return restored
+
+
 def normalize_landsmaps_name(value: str) -> str:
     """Match LandsMaps names despite district codes and parenthetical suffixes."""
     value = normalize_text(value)
@@ -766,6 +796,21 @@ def get_landsmaps_location(page, row: dict, search_api: str, access_token: str) 
 
 
 def enrich_locations_with_landsmaps(page, results: list[dict]) -> None:
+    pending_rows = []
+    for index, row in enumerate(results, start=1):
+        if normalize_text(row.get("Location", "")):
+            row.pop("Location_error", None)
+            continue
+        row.setdefault("Location", "")
+        pending_rows.append((index, row))
+
+    if not pending_rows:
+        print("ℹ️ ทุก row มี Location แล้ว; ไม่เรียก LandsMaps")
+        return
+
+    print(
+        f"ℹ️ เรียก LandsMaps เฉพาะ {len(pending_rows)}/{len(results)} row ที่ Location ว่าง"
+    )
     # Reuse the existing page/context so LandsMaps can initialize its sessionStorage token.
     page.goto(LANDSMAPS_URL, wait_until="domcontentloaded", timeout=60000)
     page.wait_for_selector("#cbprovince", timeout=30000)
@@ -789,8 +834,7 @@ def enrich_locations_with_landsmaps(page, results: list[dict]) -> None:
     if not access_token or not search_api:
         raise RuntimeError("ไม่พบ LandsMaps API configuration หรือ access token")
 
-    for index, row in enumerate(results, start=1):
-        row.setdefault("Location", "")
+    for index, row in pending_rows:
         row.pop("Location_error", None)
         try:
             row["Location"] = get_landsmaps_location(
@@ -891,6 +935,9 @@ def main() -> None:
             wait_for_search_results(page)
 
             results = scrape_all_pages_with_detail(page)
+            restored_locations = restore_existing_locations(results, OUTPUT_CSV)
+            if restored_locations:
+                print(f"♻️ ใช้ Location เดิมจาก CSV จำนวน {restored_locations} รายการ")
             save_to_csv(results, OUTPUT_CSV)
             print(f"✅ เว็บแสดงและบันทึกข้อมูลจำนวน {len(results)} รายการ")
 
