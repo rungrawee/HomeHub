@@ -20,6 +20,10 @@ class FakeQuery:
         self.calls.append(("eq", field, value))
         return self
 
+    def neq(self, field, value):
+        self.calls.append(("neq", field, value))
+        return self
+
     def ilike(self, field, value):
         self.calls.append(("ilike", field, value))
         return self
@@ -70,6 +74,9 @@ class AssetsRepositoryTests(unittest.TestCase):
 
         self.assertEqual(rows, [{"id": "asset-1"}])
         self.assertEqual(total, 21)
+        self.assertIn(("neq", "asset_type", ""), client.query.calls)
+        self.assertIn(("neq", "province", ""), client.query.calls)
+        self.assertIn(("neq", "amphur", ""), client.query.calls)
         self.assertIn(("eq", "province", "นนทบุรี"), client.query.calls)
         self.assertIn(("ilike", "deed_number", "%81662%"), client.query.calls)
         self.assertIn(("gte", "price_final", "1000000"), client.query.calls)

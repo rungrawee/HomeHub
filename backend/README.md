@@ -69,6 +69,10 @@ PYTHONPATH=backend .venv/bin/python -m uvicorn app.main:app --reload
 `GET /assets/{id}` returns the full asset record and its auction history. The
 asset ID must be a UUID; missing assets return HTTP 404.
 
+The public asset list excludes incomplete records that have no asset type,
+province, or amphur. These records remain in Supabase for auditing and are not
+deleted.
+
 Preview location updates from the latest scraper CSV:
 
 ```bash

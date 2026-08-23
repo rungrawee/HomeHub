@@ -112,7 +112,13 @@ class SupabaseRepository:
         columns = ASSET_LIST_COLUMNS
         if auction_date_from or auction_date_to:
             columns = columns.replace("auctions(", "auctions!inner(")
-        query = self.client.table("assets").select(columns, count="exact")
+        query = (
+            self.client.table("assets")
+            .select(columns, count="exact")
+            .neq("asset_type", "")
+            .neq("province", "")
+            .neq("amphur", "")
+        )
 
         for field, value in (
             ("province", province),
