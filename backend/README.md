@@ -56,6 +56,16 @@ Check the imported Supabase data without changing it:
 PYTHONPATH=backend .venv/bin/python backend/check_data_quality.py
 ```
 
+Start the API and open `http://127.0.0.1:8000/docs`:
+
+```bash
+PYTHONPATH=backend .venv/bin/python -m uvicorn app.main:app --reload
+```
+
+`GET /assets` supports `province`, `amphur`, `tambon`, `asset_type`,
+`deed_number`, `min_price`, `max_price`, `auction_date_from`,
+`auction_date_to`, `page`, and `page_size` query parameters.
+
 The real import uses `source_key` and auction composite keys for idempotent
 upserts. Running the same CSV again should update existing records rather than
 creating duplicates.
