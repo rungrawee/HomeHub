@@ -8,6 +8,20 @@ export function formatPrice(value) {
   }).format(Number.isFinite(amount) ? amount : 0);
 }
 
+export function calculateDiscountPercent(originalPrice, finalPrice) {
+  const original = Number(originalPrice);
+  const final = Number(finalPrice);
+  if (
+    !Number.isFinite(original) ||
+    !Number.isFinite(final) ||
+    original <= 0 ||
+    final >= original
+  ) {
+    return null;
+  }
+  return Math.round(((original - final) / original) * 1000) / 10;
+}
+
 export function formatArea(asset) {
   const rai = Number(asset.rai || 0);
   const ngan = Number(asset.ngan || 0);

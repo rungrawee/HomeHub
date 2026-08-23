@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { getFilterOptions, searchAssets } from "./api";
-import { formatArea, formatAuctionDate, formatPrice, googleMapsUrl, matchesArea } from "./formatters";
+import { calculateDiscountPercent, formatArea, formatAuctionDate, formatPrice, googleMapsUrl, matchesArea } from "./formatters";
 
 const INITIAL_FILTERS = {
   province: "", amphur: "", tambon: "",
@@ -43,13 +43,15 @@ function AreaField({ label, condition, value, onCondition, onValue }) {
 function AssetCard({ asset }) {
   const mapUrl = googleMapsUrl(asset.location);
   const address = [asset.tambon, asset.amphur, asset.province].filter(Boolean).join(" • ");
+  const discountPercent = calculateDiscountPercent(asset.price, asset.price_final);
   return (
     <article className="asset-card">
       <div className="card-topline">
         <span className="asset-type">{asset.asset_type || "ไม่ระบุประเภท"}</span>
         <span className="case-number">คดี {asset.case_number || "-"}</span>
       </div>
-      <div className="price-label">ราคาทรัพย์</div>
+      {discountPercent !== null && <div className="original-price-row"><span>ราคาประเมิน</span><s>{formatPrice(asset.price)}</s><strong>ลด {discountPercent}%</strong></div>}
+      <div className="price-label">{discountPercent !== null ? "ราคาหลังปรับลด" : "ราคาทรัพย์"}</div>
       <div className="price">{formatPrice(asset.price_final)}</div>
       <div className="next-auction"><Icon name="calendar" /><span>{asset.next_auction_date ? <p>ประมูลครั้งที่ {asset.next_auction_round || "-"} <strong>วันที่ {formatAuctionDate(asset.next_auction_date)}</strong></p> : <p>ยังไม่มีวันประมูลถัดไป</p>}</span></div>
       <div className="asset-facts">

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  calculateDiscountPercent,
   formatArea,
   formatAuctionDate,
   googleMapsUrl,
@@ -7,6 +8,12 @@ import {
 } from "./formatters";
 
 describe("asset formatters", () => {
+  it("calculates a discount only when final price is lower", () => {
+    expect(calculateDiscountPercent("1500000", "1350000")).toBe(10);
+    expect(calculateDiscountPercent("1500000", "1500000")).toBeNull();
+    expect(calculateDiscountPercent("0", "0")).toBeNull();
+  });
+
   it("converts ngan to square wah and hides zero rai", () => {
     expect(formatArea({ rai: "0", ngan: "1", square_wah: "20" })).toBe(
       "120 ตร.ว.",
