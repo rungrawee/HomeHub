@@ -7,6 +7,7 @@ from pathlib import Path
 from led_monitor import (
     calculate_final_price,
     choose_asset_image_url,
+    enrich_locations_with_landsmaps,
     extract_landsmaps_location,
     extract_sale_method,
     extract_standard_deposit,
@@ -18,6 +19,7 @@ from led_monitor import (
     normalize_text,
     parse_detail_pairs_from_body,
     result_key,
+    restore_existing_locations,
     save_to_csv,
     select_base_price,
 )
@@ -64,6 +66,39 @@ class LedMonitorTests(unittest.TestCase):
         first = {"หมายเลขคดี": "A/1", "ล็อต": "1", "ลำดับ": "2", "จังหวัด": "นนทบุรี"}
         second = {"หมายเลขคดี": " A/1 ", "ล็อต": "1", "ลำดับ": "2", "จังหวัด": "นนทบุรี"}
         self.assertEqual(result_key(first), result_key(second))
+
+    def test_restores_only_missing_locations_from_existing_csv(self):
+        existing = {
+            "ล็อต": "1",
+            "ลำดับ": "2",
+            "หมายเลขคดี": "A/1",
+            "จังหวัด": "นนทบุรี",
+            "Location": "13.1,100.2",
+        }
+        missing = {**existing, "Location": ""}
+        already_present = {
+            **existing,
+            "ลำดับ": "3",
+            "Location": "14.1,101.2",
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "result.csv"
+            save_to_csv([existing], str(path))
+            restored = restore_existing_locations(
+                [missing, already_present], str(path)
+            )
+
+        self.assertEqual(restored, 1)
+        self.assertEqual(missing["Location"], "13.1,100.2")
+        self.assertEqual(already_present["Location"], "14.1,101.2")
+
+    def test_location_enrichment_does_not_open_landsmaps_when_complete(self):
+        results = [{"Location": "13.1,100.2", "Location_error": "old error"}]
+
+        enrich_locations_with_landsmaps(None, results)
+
+        self.assertEqual(results[0]["Location"], "13.1,100.2")
+        self.assertNotIn("Location_error", results[0])
 
     def test_landsmaps_name_normalizes_codes_and_suffixes(self):
         self.assertEqual(normalize_landsmaps_name("05-ไทรน้อย(บางบัวทอง)"), "ไทรน้อย")
