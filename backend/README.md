@@ -50,6 +50,12 @@ Run the unit tests before an import:
 PYTHONPATH=backend .venv/bin/python -m unittest discover -s backend/tests -v
 ```
 
+Check the imported Supabase data without changing it:
+
+```bash
+PYTHONPATH=backend .venv/bin/python backend/check_data_quality.py
+```
+
 The real import uses `source_key` and auction composite keys for idempotent
 upserts. Running the same CSV again should update existing records rather than
 creating duplicates.

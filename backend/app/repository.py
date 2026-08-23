@@ -49,3 +49,28 @@ class SupabaseRepository:
             .execute()
         )
         return len(getattr(response, "data", None) or rows)
+
+    def fetch_all(
+        self,
+        table: str,
+        columns: str,
+        *,
+        page_size: int = 1000,
+    ) -> list[dict[str, Any]]:
+        if page_size < 1:
+            raise ValueError("page_size must be greater than zero")
+
+        rows: list[dict[str, Any]] = []
+        offset = 0
+        while True:
+            response = (
+                self.client.table(table)
+                .select(columns)
+                .range(offset, offset + page_size - 1)
+                .execute()
+            )
+            page = getattr(response, "data", None) or []
+            rows.extend(page)
+            if len(page) < page_size:
+                return rows
+            offset += page_size
