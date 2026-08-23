@@ -61,8 +61,8 @@ main { width: min(1320px, calc(100% - 40px)); margin: 0 auto; padding: 22px 0 64
 .card-topline { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .asset-type { padding: 5px 9px; color: var(--blue-dark); background: var(--blue-pale); border-radius: 7px; font-size: 14px; font-weight: 700; }
 .case-number { overflow: hidden; color: var(--muted); font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
-.asset-image-frame { display: grid; place-items: center; width: 100%; aspect-ratio: 16 / 10; margin-top: 16px; overflow: hidden; background: linear-gradient(145deg, #eef3f8, #e2e9f1); border-radius: 13px; }
-.asset-image-frame img { display: block; width: 100%; height: 100%; max-width: 100%; max-height: 100%; object-fit: contain; }
+.asset-image-frame { display: grid; place-items: center; width: 100%; aspect-ratio: 16 / 10; margin-top: 16px; position: relative; overflow: hidden; background: linear-gradient(145deg, #eef3f8, #e2e9f1); border-radius: 13px; }
+.asset-image-frame img { display: block; width: 100%; height: 100%; position: absolute; inset: 0; object-fit: contain; }
 .image-placeholder { gap: 8px; align-content: center; color: #8492a7; background: linear-gradient(145deg, #f0f5fa, #e3ebf4); font-size: 13px; }
 .image-placeholder svg { width: 30px; height: 30px; color: #9aabc0; }
 .original-price-row { display: flex; align-items: center; gap: 8px; margin-top: 18px; color: var(--muted); font-size: 13px; }
