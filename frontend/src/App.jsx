@@ -41,6 +41,7 @@ function AreaField({ label, condition, value, onCondition, onValue }) {
 }
 
 function AssetCard({ asset }) {
+  const [imageFailed, setImageFailed] = useState(false);
   const mapUrl = googleMapsUrl(asset.location);
   const address = [asset.tambon, asset.amphur, asset.province].filter(Boolean).join(" • ");
   const discountPercent = calculateDiscountPercent(asset.price, asset.price_final);
@@ -50,6 +51,13 @@ function AssetCard({ asset }) {
         <span className="asset-type">{asset.asset_type || "ไม่ระบุประเภท"}</span>
         <span className="case-number">คดี {asset.case_number || "-"}</span>
       </div>
+      {asset.image_url && !imageFailed ? (
+        <div className="asset-image-frame">
+          <img src={asset.image_url} alt={`รูปทรัพย์เลขที่โฉนด ${asset.deed_number || "ไม่ระบุ"}`} loading="lazy" onError={() => setImageFailed(true)} />
+        </div>
+      ) : (
+        <div className="asset-image-frame image-placeholder"><Icon name="land" /><span>ยังไม่มีรูปทรัพย์</span></div>
+      )}
       {discountPercent !== null && <div className="original-price-row"><span>ราคาประเมิน</span><s>{formatPrice(asset.price)}</s><strong>ลด {discountPercent}%</strong></div>}
       <div className="price-label">{discountPercent !== null ? "ราคาหลังปรับลด" : "ราคาทรัพย์"}</div>
       <div className="price">{formatPrice(asset.price_final)}</div>

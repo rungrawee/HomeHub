@@ -46,6 +46,7 @@ class MappingTests(unittest.TestCase):
             "ราคา": "2,192,500.00",
             "ราคา_final": "1,534,750.00",
             "deposit_amount": "150,000.00",
+            "image_url": "https://asset.led.go.th/images/property.jpg",
             "detail_raw_text": (
                 "1 23/04/2569 งดขายไม่มีผู้สู้ราคา\n"
                 "2 14/05/2569 งดขายไม่มีผู้สู้ราคา\n"
@@ -58,6 +59,10 @@ class MappingTests(unittest.TestCase):
         mapped = map_csv_row(row)
         self.assertEqual(mapped.values["source_key"], "ผบE.11389/2566|100 - 1|131507")
         self.assertEqual(mapped.values["price_final"], "1534750.00")
+        self.assertEqual(
+            mapped.values["image_url"],
+            "https://asset.led.go.th/images/property.jpg",
+        )
         self.assertEqual(len(mapped.auctions), 6)
 
 

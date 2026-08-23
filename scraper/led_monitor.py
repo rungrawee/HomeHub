@@ -334,6 +334,7 @@ def scrape_detail_page(page) -> dict:
     body_text = page.locator("body").inner_text()
     detail = parse_detail_pairs_from_body(body_text)
     detail["_sale_method"] = extract_sale_method(body_text)
+    detail["image_url"] = extract_asset_image_url(page)
 
     deed_number = page.locator('input[name="deedno"]')
     if deed_number.count() > 0:
@@ -357,6 +358,37 @@ def scrape_detail_page(page) -> dict:
     detail["detail_url"] = page.url
 
     return detail
+
+
+def choose_asset_image_url(candidates: list[dict]) -> str:
+    """Choose the largest property photo while ignoring site chrome and CAPTCHA."""
+    ignored_terms = ("logo", "icon", "captcha", "verify", "loading", "print")
+    usable = []
+    for candidate in candidates:
+        url = normalize_text(str(candidate.get("url", "")))
+        width = int(candidate.get("width") or 0)
+        height = int(candidate.get("height") or 0)
+        description = normalize_text(str(candidate.get("description", ""))).lower()
+        if not url.startswith(("http://", "https://")):
+            continue
+        if width < 280 or height < 180:
+            continue
+        if any(term in f"{url} {description}".lower() for term in ignored_terms):
+            continue
+        usable.append((width * height, url))
+    return max(usable, default=(0, ""))[1]
+
+
+def extract_asset_image_url(page) -> str:
+    candidates = page.locator("img").evaluate_all(
+        """images => images.map(image => ({
+            url: image.currentSrc || image.src || '',
+            width: image.naturalWidth || image.width || 0,
+            height: image.naturalHeight || image.height || 0,
+            description: `${image.alt || ''} ${image.id || ''} ${image.className || ''}`
+        }))"""
+    )
+    return choose_asset_image_url(candidates)
 
 
 def parse_detail_pairs_from_body(text: str) -> dict:

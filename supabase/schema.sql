@@ -23,6 +23,7 @@ create table if not exists public.assets (
     officer_name text,
     sale_location text,
     location text,
+    image_url text,
     detail_url text,
     raw_detail text,
     source_updated_at timestamptz,
@@ -70,3 +71,6 @@ for each row execute function public.set_updated_at();
 -- Keep tables private until the API authentication and RLS policies are ready.
 alter table public.assets enable row level security;
 alter table public.auctions enable row level security;
+
+-- Keep existing databases compatible when this schema is run again.
+alter table public.assets add column if not exists image_url text;

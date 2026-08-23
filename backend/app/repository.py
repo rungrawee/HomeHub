@@ -5,14 +5,14 @@ from typing import Any
 ASSET_LIST_COLUMNS = (
     "id,source_key,lot,sequence,case_number,asset_type,deed_number,"
     "rai,ngan,square_wah,area_detail,price,price_final,deposit_amount,"
-    "tambon,amphur,province,sale_location,location,detail_url,updated_at,"
+    "tambon,amphur,province,sale_location,location,image_url,detail_url,updated_at,"
     "auctions(auction_round,auction_date,status)"
 )
 
 ASSET_DETAIL_COLUMNS = (
     "id,source_key,lot,sequence,case_number,asset_type,deed_number,"
     "rai,ngan,square_wah,area_detail,price,price_final,deposit_amount,"
-    "tambon,amphur,province,owner_name,officer_name,sale_location,location,"
+    "tambon,amphur,province,owner_name,officer_name,sale_location,location,image_url,"
     "detail_url,raw_detail,source_updated_at,created_at,updated_at,"
     "auctions(auction_round,auction_date,status)"
 )
