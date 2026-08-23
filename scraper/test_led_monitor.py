@@ -68,6 +68,10 @@ class LedMonitorTests(unittest.TestCase):
             )
             self.assertEqual(load_config(str(path))["search"]["rai_value"], "")
 
+    def test_default_config_is_relative_to_scraper_module(self):
+        config = load_config()
+        self.assertEqual(config["search"]["province"], "นนทบุรี")
+
     def test_price_priority_skips_missing_amounts(self):
         text = (
             "ราคาที่กำหนดโดยคณะกรรมการกำหนดราคาทรัพย์ จำนวน ไม่มี บาท\n"

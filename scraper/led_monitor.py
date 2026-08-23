@@ -16,7 +16,8 @@ CHROME_PATH = os.getenv(
     "CHROME_PATH", "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 )
 TESSERACT_PATH = os.getenv("TESSERACT_PATH", "/opt/homebrew/bin/tesseract")
-OUTPUT_CSV = os.getenv("OUTPUT_CSV", "result.csv")
+SCRIPT_DIR = Path(__file__).resolve().parent
+OUTPUT_CSV = os.getenv("OUTPUT_CSV", str(SCRIPT_DIR / "result.csv"))
 # Current result pages use table.table-hover; keep this centralized for site updates.
 TABLE_SELECTOR = "table.table-hover"
 LANDSMAPS_URL = os.getenv("LANDSMAPS_URL", "https://landsmaps.dol.go.th/")
@@ -118,8 +119,9 @@ def fill_price_range(page, minimum_price: str, maximum_price: str) -> None:
             page.fill(selector, value.replace(",", ""))
 
 
-def load_config(filename: str = "config.json") -> dict:
-    with open(filename, encoding="utf-8") as file:
+def load_config(filename: str | os.PathLike[str] | None = None) -> dict:
+    config_path = Path(filename) if filename is not None else SCRIPT_DIR / "config.json"
+    with config_path.open(encoding="utf-8") as file:
         config = json.load(file)
     search = config.get("search") or {}
     required = ["province"]
@@ -685,6 +687,7 @@ def get_landsmaps_location(page, row: dict, search_api: str, access_token: str) 
         raise RuntimeError(f"ไม่พบจังหวัดใน LandsMaps: {province}")
     page.select_option("#cbprovince", value=province_value)
     last_error = None
+    amphur_value = ""
     for amphur_candidate in landsmaps_name_candidates(amphur):
         try:
             amphur_value = wait_for_amphur_option(page, amphur_candidate)
@@ -817,7 +820,12 @@ def main() -> None:
     global OUTPUT_CSV
     config = load_config()
     search = config["search"]
-    OUTPUT_CSV = config.get("output_csv", OUTPUT_CSV)
+    configured_output = config.get("output_csv")
+    if configured_output:
+        output_path = Path(configured_output)
+        OUTPUT_CSV = str(
+            output_path if output_path.is_absolute() else SCRIPT_DIR / output_path
+        )
 
     with sync_playwright() as p:
         browser = p.chromium.launch(
