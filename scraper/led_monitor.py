@@ -598,8 +598,16 @@ def save_to_csv(results: list[dict], filename: str) -> None:
         if normalize_text(header) in EXCLUDED_CSV_COLUMNS:
             continue
 
-        # Keep the first column when two columns contain the same values.
+        # The import schema depends on every summary column, even when two
+        # columns happen to contain identical values in a particular run.
         values = [normalize_text(str(row.get(header, ""))) for row in results]
+        if header in base_headers:
+            headers.append(header)
+            if any(values):
+                seen_signatures.setdefault(tuple(values), header)
+            continue
+
+        # De-duplicate only optional detail columns.
         if not any(values):
             headers.append(header)
             continue
