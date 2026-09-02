@@ -183,6 +183,30 @@ class LedMonitorTests(unittest.TestCase):
             self.assertNotIn("ที่อยู่จดหมายอิเล็กทรอนิกส์", saved[0])
             self.assertNotIn("ติดต่อผู้ดูแลเว็บไซต์", saved[0])
 
+    def test_save_to_csv_keeps_base_columns_with_identical_values(self):
+        row = {
+            "ล็อต": "1",
+            "ลำดับ": "1",
+            "หมายเลขคดี": "A/1",
+            "ประเภท": "ที่ดิน",
+            "ไร่": "0",
+            "งาน": "0",
+            "ตรว": "0",
+            "ราคา": "100",
+            "ตำบล": "บางรักพัฒนา",
+            "อำเภอ": "บางบัวทอง",
+            "จังหวัด": "นนทบุรี",
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "result.csv"
+            save_to_csv([row], str(path))
+            with path.open("r", encoding="utf-8-sig", newline="") as file:
+                headers = csv.DictReader(file).fieldnames
+
+        self.assertIn("ไร่", headers)
+        self.assertIn("งาน", headers)
+        self.assertIn("ตรว", headers)
+
 
 if __name__ == "__main__":
     unittest.main()
